@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include "super_random.h"
 
 // S-Box í Rijndael / AES algórithmanum, þetta er basically listar yfir tölur sem eru notaðar til að skipta út öðrum tölum
 // Þetta er ekki lykillinn (key), heldur svokallað "lookup table", þetta er array af 16 arrays með lengdina 16, (frá 0 upp í F í x og y)
@@ -318,11 +322,101 @@ void encrypt(uint8_t in[], uint8_t out[], uint32_t key[], int keysize){
 
 }
 
+static struct {
+	char* input;
+	char* output;
+	char* key_output;
+} CONFIG = {
+	NULL,
+	NULL,
+	"key.rkey",
+};
+
+void parse_args(int argc, char** argv) {
+	for(int i = 1; i < argc; i++) {
+		//printf("ARGS [%i]: %s\n", i, argv[i]);
+		if(!strcmp(argv[i], "-k")) {
+			CONFIG.key_output = argv[++i];
+		} else if(!strcmp(argv[i], "-o")) {
+			CONFIG.output = argv[++i];
+		} else {
+			if(!CONFIG.input) {
+				CONFIG.input = argv[i];
+			} else {
+				printf("Error: Cannot use multiple files!\n");
+			}
+		}
+	}
+}
+
+unsigned char* make_random_key() {
+	unsigned char* key = (unsigned char*)malloc(32 * sizeof(unsigned char)); // Búa til 256 bita lykil, sem er sama og 32 bæti
+	for(int i = 0; i < 32; i++) {
+		key[i] = random_char();
+	}
+	return key;
+}
 
 
-int main(){
+int main(int argc, char** argv){
 
-	uint8_t plaintext[16] = { 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,
+	parse_args(argc, argv);
+
+	if(!CONFIG.input) {
+		printf("Error: No file selected!\n");
+		return -1;
+	}
+	printf("??\n");
+	if(!CONFIG.output) {
+		CONFIG.output = (char*) malloc((strlen(CONFIG.input)+4)*sizeof(char));
+		printf("????\n");
+		strcpy(CONFIG.output, CONFIG.input);
+		printf("????\n");
+		strcat(CONFIG.output, ".aes");
+		printf("????\n");
+	}
+	printf("??\n");
+	FILE* input = fopen(CONFIG.input, "rb");
+	printf("Input file: %s\n", CONFIG.input);
+	if(!input) {
+		printf("Error: File not found!\n");
+		return -1;
+	}
+
+	printf("??\n");
+
+	
+
+	unsigned char* key = make_random_key();
+
+	printf("??\n");
+
+	// Skrifa lykilinn í skrá
+	FILE* keyfile = fopen(CONFIG.key_output, "wb");
+	fwrite(key, 1, 32, keyfile);
+	fclose(keyfile);
+
+
+
+	FILE* output = fopen(CONFIG.output, "wb");
+
+	unsigned char plain[16];
+	unsigned char cipher[16];
+	unsigned int i_key_schedule[60];
+	int bread = -1;
+	do {
+		bread = fread(plain, 1, 16, input);
+		key_schedule(key, i_key_schedule, 256);
+		encrypt(plain, cipher, i_key_schedule, 256);
+		fwrite(cipher, sizeof(char), sizeof(char)*16, output);
+		printf("Read: %i\n", bread);
+	} while(bread > 0);
+
+	fclose(output);
+	fclose(input);
+	free(key);
+
+	/*uint8_t plaintext[16] = { 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,
 	0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee,0xff };
 	uint8_t key[32] = { 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,
 		0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f,0x10,0x11,
@@ -338,6 +432,8 @@ int main(){
 
 	for (int idx = 0; idx < 16; idx++)
 		printf("%02x", ciphertext[idx]);
-	printf("\n");
+	printf("\n");*/
+
+
 	
 }
