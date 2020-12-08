@@ -16,9 +16,18 @@ gcc src\rijndael.c -o decrypt.exe
 ```
 ## Notkun
 Til að nota svo forritin, þá þarftu að velja skrá til að taka inn, þú getur notað þessa möguleika:
-- `-o` output, skráin sem 
-- `-k` í **encryption**, þá er þetta *lykillinn* sem forritið *skrifar*, en í **decryption** er þetta lykillinn sem forritið les (sem skrá)
+- `-o` (optional í encrypt.exe) Output, skráin sem forritin skrifa *út*
+- `-k` (optional) Í **encryption**, þá er þetta *lykillinn* sem forritið *skrifar*, en í **decryption** er þetta lykillinn sem forritið les (sem skrá)
 
+### Dæmi
+#### Dulkóðun
+```bash
+encrypt.exe skra.txt -k lykill.key -o skra.aes
+```
+#### Afkóðun
+```bash
+decrypt.exe skra.aes -k lykill.key -o afkodad.txt
+```
 
 ## Tenglar
 - Algrímið á **![Wikipedia](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)**.
