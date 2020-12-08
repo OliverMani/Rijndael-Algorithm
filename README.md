@@ -16,5 +16,5 @@ gcc src\rijndael.c -o decrypt.exe
 ```
 
 ## Tenglar
-Algrímið á **![Wikipedia](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)**.
-Video á **![Wikipedia](https://youtu.be/lnKPoWZnNNM)** um algrímið.
+- Algrímið á **![Wikipedia](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)**.
+- Video á **![Wikipedia](https://youtu.be/lnKPoWZnNNM)** um algrímið.
