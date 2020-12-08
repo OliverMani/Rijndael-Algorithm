@@ -366,30 +366,29 @@ int main(int argc, char** argv){
 		printf("Error: No file selected!\n");
 		return -1;
 	}
-	printf("??\n");
+	
 	if(!CONFIG.output) {
 		CONFIG.output = (char*) malloc((strlen(CONFIG.input)+4)*sizeof(char));
-		printf("????\n");
 		strcpy(CONFIG.output, CONFIG.input);
-		printf("????\n");
 		strcat(CONFIG.output, ".aes");
-		printf("????\n");
 	}
-	printf("??\n");
+	
 	FILE* input = fopen(CONFIG.input, "rb");
-	printf("Input file: %s\n", CONFIG.input);
+
+
+
+	
+
 	if(!input) {
 		printf("Error: File not found!\n");
 		return -1;
 	}
 
-	printf("??\n");
-
-	
-
+	// Auka; segja hvað file'inn er langur upphaflega, til að decryption file'inn sé ekki of langur
+	fseek(input, 0L, SEEK_END);
+	unsigned long size = ftell(input);
+	fseek(input, 0L, SEEK_SET);
 	unsigned char* key = make_random_key();
-
-	printf("??\n");
 
 	// Skrifa lykilinn í skrá
 	FILE* keyfile = fopen(CONFIG.key_output, "wb");
@@ -399,40 +398,26 @@ int main(int argc, char** argv){
 
 
 	FILE* output = fopen(CONFIG.output, "wb");
+	fwrite(&size, sizeof(unsigned long), 1, output);
 
 	unsigned char plain[16];
 	unsigned char cipher[16];
 	unsigned int i_key_schedule[60];
 	int bread = -1;
+
+	
+
 	do {
 		bread = fread(plain, 1, 16, input);
 		key_schedule(key, i_key_schedule, 256);
 		encrypt(plain, cipher, i_key_schedule, 256);
-		fwrite(cipher, sizeof(char), sizeof(char)*16, output);
-		printf("Read: %i\n", bread);
+		fwrite(cipher, sizeof(char), 16, output);
+		//printf("Read: %i\n", bread);
 	} while(bread > 0);
 
 	fclose(output);
 	fclose(input);
 	free(key);
-
-	/*uint8_t plaintext[16] = { 0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,
-	0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee,0xff };
-	uint8_t key[32] = { 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,
-		0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f,0x10,0x11,
-		0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1a,
-		0x1b,0x1c,0x1d,0x1e,0x1f };
-	uint8_t ciphertext[16];
-
-	uint32_t i_key_schedule[60];
-
-	key_schedule(key, i_key_schedule, 256);
-
-	encrypt(plaintext, ciphertext, i_key_schedule, 256);
-
-	for (int idx = 0; idx < 16; idx++)
-		printf("%02x", ciphertext[idx]);
-	printf("\n");*/
 
 
 	
